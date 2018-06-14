@@ -1,8 +1,10 @@
 import logging
 import os
+from pprint import pprint
 
 from slackclient import SlackClient
 from fabric import Connection
+from rtmbot.core import Plugin
 
 SLACK_ACCESS_TOKEN = os.environ['SLACK_ACCESS_TOKEN']
 SLACK_CHANNEL_NAME = os.environ['SLACK_CHANNEL_NAME']
@@ -11,6 +13,12 @@ T3_POINT_NOTIFY_THRESHOLD = int(os.getenv('T3_POINT_NOTIFY_THRESHOLD', 999999999
 logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
+class T3PO(Plugin):
+    def process_message(self, data):
+        pprint(self.plugin_config)
+        pprint(self.slack_client)
+        pprint(self.outputs)
+        pprint(data)
 
 def get_t3_point():
     try:
