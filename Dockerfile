@@ -1,9 +1,11 @@
 FROM python:3
 
-COPY *.py requirements.txt /t3po/
+COPY requirements.txt /t3po/
 WORKDIR /t3po
 RUN pip install -r requirements.txt
-CMD ["python", "t3po.py"]
+COPY *.py /t3po/
+COPY entrypoint.sh /t3po/
+RUN chmod +x entrypoint.sh
+CMD ["./entrypoint.sh"]
 
 EXPOSE 5000
-VOLUME ["/root/.ssh"]

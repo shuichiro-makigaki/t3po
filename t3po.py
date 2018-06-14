@@ -1,26 +1,25 @@
 import logging
 import os
-from pathlib import Path
 
-from fabric import Connection
 from slackclient import SlackClient
+from fabric import Connection
 
-
-SLACK_ACCESS_TOKEN = os.getenv('SLACK_ACCESS_TOKEN')
-SLACK_CHANNEL_NAME = os.getenv('SLACK_CHANNEL_NAME')
-T3_LOGIN_USERNAME = os.getenv('T3_LOGIN_USERNAME')
+SLACK_ACCESS_TOKEN = os.environ['SLACK_ACCESS_TOKEN']
+SLACK_CHANNEL_NAME = os.environ['SLACK_CHANNEL_NAME']
 T3_POINT_NOTIFY_THRESHOLD = int(os.getenv('T3_POINT_NOTIFY_THRESHOLD', 999999999999999))
-LOG_LEVEL = os.getenv('T3PO_LOG_LEVEL', 'logging.INFO')
-
 
 logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S', level=eval(LOG_LEVEL))
+                    datefmt='%Y-%m-%d %H:%M:%S', level=logging.INFO)
 
 
 def get_t3_point():
+    try:
+        result = Connection('login.t3.gsic.titech.ac.jp').run('t3-user-info group point', hide='both')
+    except Exception:
+        [logging.error(l) for l in result.stderr.splitlines()]
+        raise
+    [logging.debug(l) for l in result.stdout.splitlines()]
     points = {}
-    conn = Connection('login.t3.gsic.titech.ac.jp', user=T3_LOGIN_USERNAME)
-    result = conn.run('t3-user-info group point', hide='stdout')
     for l in result.stdout.splitlines()[2:]:
         t = l.split()
         points[t[1]] = {'gid': int(t[0]), 'point': int(t[2])}
@@ -40,6 +39,7 @@ def format_topic(points):
 
 def t3po():
     points = get_t3_point()
+    logging.info(points)
     cli = SlackClient(SLACK_ACCESS_TOKEN)
     result = cli.api_call('channels.list')
     logging.debug(result) if result['ok'] else logging.error(result)
@@ -54,6 +54,7 @@ def t3po():
 
 def main():
     t3po()
+
 
 if __name__ == '__main__':
     main()

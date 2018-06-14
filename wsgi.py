@@ -3,8 +3,8 @@ import os
 from flask import Flask, request
 from slackclient import SlackClient
 
-client_id = os.getenv('SLACK_CLIENT_ID')
-client_secret = os.getenv('SLACK_CLIENT_SECRET')
+client_id = os.environ['SLACK_CLIENT_ID']
+client_secret = os.environ['SLACK_CLIENT_SECRET']
 oauth_scope = 'channels:write channels:read'
 
 app = Flask(__name__)
